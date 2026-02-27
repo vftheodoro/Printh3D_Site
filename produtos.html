@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Catálogo de produtos Printh3D — Impressão 3D personalizada.">
+  <title>Produtos — Printh3D</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="icon" href="assets/imagens/logos/logo_printh_padrão.png">
+</head>
+<body data-page="catalog">
+
+  <!-- ══════════ HEADER ══════════ -->
+  <header class="header">
+    <div class="container">
+      <a href="index.html" class="logo">
+        <img src="assets/imagens/logos/logo_printh_padrão.png" alt="Printh3D">
+      </a>
+      <nav class="nav-menu" id="nav-menu">
+        <a href="index.html">Home</a>
+        <a href="produtos.html" class="active">Produtos</a>
+        <a href="orcamento.html">Orçamento</a>
+        <a href="login.html" id="auth-link">Login</a>
+      </nav>
+      <div class="hamburger" id="hamburger">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════════ CONTEÚDO ══════════ -->
+  <main class="page-top">
+    <div class="container">
+
+      <div class="breadcrumb">
+        <a href="index.html">Home</a> <span>›</span> Produtos
+      </div>
+
+      <section class="section" style="padding-top: 20px;">
+        <h1 class="section-title">Nossos <span>Produtos</span></h1>
+        <p class="section-subtitle">Peças impressas em 3D com qualidade profissional. Clique para ver detalhes.</p>
+
+        <!-- Filtros de categoria -->
+        <div id="category-filter" style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 32px;"></div>
+
+        <!-- Grid de Produtos -->
+        <div class="products-grid" id="products-grid">
+          <!-- Renderizado via JS -->
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ══════════ CTA ══════════ -->
+  <section class="section">
+    <div class="container">
+      <div class="cta-section">
+        <h2><i class="bi bi-question-circle icon"></i>Não encontrou o que procura?</h2>
+        <p>Envie seu modelo 3D e fazemos uma impressão personalizada para você!</p>
+        <a href="orcamento.html" class="btn btn-primary btn-lg"><i class="bi bi-calculator"></i> Fazer Orçamento Personalizado</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ FOOTER ══════════ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <h3>Print<span style="color: var(--blue-primary);">h3D</span></h3>
+          <p>Impressão 3D personalizada com qualidade profissional.</p>
+          <div class="footer-social">
+            <a href="#" title="Instagram"><i class="bi bi-instagram"></i></a>
+            <a href="#" title="Facebook"><i class="bi bi-facebook"></i></a>
+            <a href="#" title="YouTube"><i class="bi bi-youtube"></i></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h3>Navegação</h3>
+          <a href="index.html">Home</a><br>
+          <a href="produtos.html">Produtos</a><br>
+          <a href="orcamento.html">Orçamento</a><br>
+          <a href="login.html">Login</a>
+        </div>
+        <div class="footer-col">
+          <h3>Materiais</h3>
+          <p>PLA • PETG • ABS</p>
+          <p>TPU • Resina • Nylon</p>
+        </div>
+        <div class="footer-col">
+          <h3>Contato</h3>
+          <p><i class="bi bi-telephone-fill"></i> (13) 99755-3465</p>
+          <p><i class="bi bi-envelope-fill"></i> contato@printh3d.com</p>
+          <p><i class="bi bi-geo-alt-fill"></i> Santos, SP — Brasil</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 Printh3D — Todos os direitos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/storage.js"></script>
+  <script src="js/whatsapp.js"></script>
+  <script src="js/products.js"></script>
+  <script src="js/budget.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
