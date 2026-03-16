@@ -1,6 +1,3 @@
-"use client";
-
-import { motion } from "framer-motion";
 import { getAllProducts } from "@/lib/products";
 import ProductCard from "@/components/products/ProductCard";
 import Link from "next/link";
@@ -39,16 +36,8 @@ export default async function FeaturedProducts() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {featured.map((product, idx) => (
-            <motion.div
-              key={product.id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.1 }}
-            >
-              <ProductCard product={product} />
-            </motion.div>
+          {featured.map((product) => (
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </div>
