@@ -68,9 +68,29 @@ export default function ProductCard({ product }: { product: Product }) {
         <div className="mt-auto flex items-center justify-between pt-8 border-t border-white/5">
           <div className="flex flex-col">
             <span className="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-1">Budget Base</span>
-            <span className="text-2xl font-black text-white tracking-tighter">R$ {(product.promotional_price ?? product.price).toFixed(2)}</span>
-            {product.promotional_price && (
-              <span className="text-xs text-slate-500 line-through">R$ {product.price.toFixed(2)}</span>
+            {product.variations && product.variations.length > 0 ? (
+              <div className="flex flex-col">
+                {product.priceMin !== product.priceMax ? (
+                  <>
+                    <span className="text-2xl font-black text-white tracking-tighter">
+                      R$ {(product.priceMin || 0).toFixed(2)} - R$ {(product.priceMax || 0).toFixed(2)}
+                    </span>
+                    <span className="text-xs text-blue-400 font-bold">+{product.variations.length} variações</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-2xl font-black text-white tracking-tighter">R$ {(product.priceMin || 0).toFixed(2)}</span>
+                    <span className="text-xs text-blue-400 font-bold">{product.variations.length} {product.variations.length === 1 ? 'variação' : 'variações'}</span>
+                  </>
+                )}
+              </div>
+            ) : (
+              <>
+                <span className="text-2xl font-black text-white tracking-tighter">R$ {(product.promotional_price ?? product.price).toFixed(2)}</span>
+                {product.promotional_price && (
+                  <span className="text-xs text-slate-500 line-through">R$ {product.price.toFixed(2)}</span>
+                )}
+              </>
             )}
           </div>
           <a

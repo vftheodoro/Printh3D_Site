@@ -1,20 +1,50 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { Product } from "@/lib/products";
+import { Product, ProductVariation } from "@/lib/products";
 import { getWhatsAppLink, productMessage } from "@/lib/whatsapp";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { ChevronLeft, MessageCircle, Info, Palette, Sparkles, ShoppingBag } from "lucide-react";
+import { ChevronLeft, MessageCircle, Info, Palette, Sparkles, ShoppingBag, ChevronRight, ChevronDown } from "lucide-react";
 
 export default function ProductDetailClient({ product }: { product: Product | undefined }) {
   const router = useRouter();
 
   const [color, setColor] = useState(product?.colors?.[0] || "");
   const [finish, setFinish] = useState(product?.finishes?.[0] || "");
+  const [selectedVariationId, setSelectedVariationId] = useState<string | null>(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+  const selectedVariation = useMemo(() => {
+    if (!product?.variations || !selectedVariationId) return null;
+    return product.variations.find(v => v.id === selectedVariationId);
+  }, [product?.variations, selectedVariationId]);
+
+  const currentProduct = selectedVariation || product;
+  const currentPrice = currentProduct?.promotional_price ?? currentProduct?.price ?? 0;
+  const originalPrice = currentProduct?.price ?? 0;
+
+  // Collect all images from product and its variations
+  const allImages = useMemo(() => {
+    const images: { id: string; url: string; name: string }[] = [];
+    
+    if (product?.image) {
+      images.push({ id: 'main', url: product.image, name: product.name });
+    }
+
+    if (product?.variations) {
+      product.variations.forEach((v, idx) => {
+        if (v.image && !images.some(img => img.url === v.image)) {
+          images.push({ id: `var-${v.dbId}`, url: v.image, name: v.name });
+        }
+      });
+    }
+
+    return images.length > 0 ? images : [{ id: 'placeholder', url: '/assets/imagens/design_screen.png', name: 'Imagem' }];
+  }, [product]);
 
   if (!product) {
     return (
@@ -33,9 +63,9 @@ export default function ProductDetailClient({ product }: { product: Product | un
 
   const handleBuy = () => {
     const message = productMessage({
-      name: product.name,
-      price: product.price,
-      material: product.material,
+      name: selectedVariation?.name || product.name,
+      price: currentPrice,
+      material: selectedVariation?.material || product.material,
       color,
       finish
     });
@@ -61,19 +91,45 @@ export default function ProductDetailClient({ product }: { product: Product | un
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="relative aspect-square rounded-[2rem] bg-slate-900 border border-white/5 overflow-hidden flex items-center justify-center"
+              className="flex flex-col gap-4"
             >
-              {product.image ? (
-                <Image
-                  src={product.image}
-                  alt={product.name}
-                  fill
-                  className="object-cover"
-                />
-              ) : (
-                <div className="text-center p-12">
-                  <span className="text-9xl font-black text-white/5 block mb-4">3D</span>
-                  <span className="text-slate-500 text-sm font-medium uppercase tracking-widest">Imagem Ilustrativa</span>
+              <div className="relative aspect-square rounded-[2rem] bg-slate-900 border border-white/5 overflow-hidden flex items-center justify-center">
+                {allImages[activeImageIndex]?.url ? (
+                  <Image
+                    src={allImages[activeImageIndex].url}
+                    alt={allImages[activeImageIndex].name}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="text-center p-12">
+                    <span className="text-9xl font-black text-white/5 block mb-4">3D</span>
+                    <span className="text-slate-500 text-sm font-medium uppercase tracking-widest">Imagem Ilustrativa</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Image Gallery Thumbnail */}
+              {allImages.length > 1 && (
+                <div className="flex gap-3 overflow-x-auto pb-2">
+                  {allImages.map((img, idx) => (
+                    <button
+                      key={img.id}
+                      onClick={() => setActiveImageIndex(idx)}
+                      className={`relative w-20 h-20 rounded-lg border-2 flex-shrink-0 overflow-hidden transition-all ${
+                        activeImageIndex === idx
+                          ? 'border-blue-500 ring-2 ring-blue-500/30'
+                          : 'border-white/10 hover:border-white/20'
+                      }`}
+                    >
+                      <Image
+                        src={img.url}
+                        alt={img.name}
+                        fill
+                        className="object-cover"
+                      />
+                    </button>
+                  ))}
                 </div>
               )}
             </motion.div>
@@ -89,20 +145,52 @@ export default function ProductDetailClient({ product }: { product: Product | un
                   {product.category}
                 </span>
                 <span className="text-sm text-slate-400 flex items-center gap-1">
-                  <Info className="w-4 h-4" /> {product.material}
+                  <Info className="w-4 h-4" /> {currentProduct?.material}
                 </span>
               </div>
 
               <h1 className="text-4xl md:text-5xl font-extrabold mb-6 leading-tight">
-                {product.name}
+                {selectedVariation?.name || product.name}
               </h1>
 
               <div className="text-3xl font-black text-white mb-8 flex items-baseline gap-2">
-                R$ {product.promotional_price ? product.promotional_price.toFixed(2) : product.price.toFixed(2)}
+                R$ {currentPrice.toFixed(2)}
                 {product.promotional_price && (
-                   <span className="text-sm text-slate-500 line-through ml-2">R$ {product.price.toFixed(2)}</span>
+                   <span className="text-sm text-slate-500 line-through ml-2">R$ {originalPrice.toFixed(2)}</span>
                 )}
               </div>
+
+              {product.variations && product.variations.length > 0 && (
+                <div className="mb-8 p-6 bg-slate-900/40 rounded-2xl border border-white/5">
+                  <label className="flex items-center gap-2 text-sm font-bold mb-4">
+                    <ChevronDown className="w-4 h-4 text-blue-500" /> Variações Disponíveis
+                  </label>
+                  <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                    {product.variations.map((variation) => (
+                      <button
+                        key={variation.id}
+                        onClick={() => setSelectedVariationId(variation.id)}
+                        className={`w-full flex items-center justify-between p-4 rounded-lg border-2 transition-all text-left ${
+                          selectedVariationId === variation.id
+                            ? 'border-blue-500 bg-blue-500/10'
+                            : 'border-white/5 bg-slate-800/40 hover:border-white/10'
+                        }`}
+                      >
+                        <div className="flex-grow">
+                          <div className="font-bold text-white">{variation.name}</div>
+                          <div className="text-sm text-slate-400">{variation.material}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-black text-white">R$ {(variation.promotional_price ?? variation.price).toFixed(2)}</div>
+                          {variation.promotional_price && (
+                            <div className="text-xs text-slate-500 line-through">R$ {variation.price.toFixed(2)}</div>
+                          )}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <p className="text-slate-400 leading-relaxed mb-10 text-lg font-medium">
                 {product.fullDesc}
