@@ -461,15 +461,15 @@ export default function ProductsPage() {
         <table>
           <thead>
             <tr>
-              <th style={{ width: '40px' }}>ID</th>
+              <th className="hide-mobile" style={{ width: '40px' }}>ID</th>
               <th style={{ width: '60px' }}>Foto</th>
-              <th>SKU / Produto</th>
-              <th>Categoria</th>
-              <th>Estoque</th>
-              <th>Preço Base</th>
-              <th>Promo</th>
-              <th>Status</th>
-              <th style={{ width: '100px', textAlign: 'right' }}>Ações</th>
+              <th>Produto</th>
+              <th className="hide-tablet">Categoria</th>
+              <th className="hide-mobile">Estoque</th>
+              <th>Preço</th>
+              <th className="hide-tablet">Promo</th>
+              <th className="hide-tablet">Status</th>
+              <th style={{ width: '80px', textAlign: 'right' }}>Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -479,8 +479,9 @@ export default function ProductsPage() {
               <tr><td colSpan={9} style={{ textAlign: 'center', padding: '2rem' }}>Nenhum produto encontrado.</td></tr>
             ) : products.map(prod => (
               <tr key={prod.id} style={{ opacity: prod.ativo ? 1 : 0.5 }}>
-                <td style={{ color: 'var(--text-muted)' }}>#{prod.id}</td>
+                <td className="hide-mobile" style={{ color: 'var(--text-muted)' }}>#{prod.id}</td>
                 <td>
+                  {/* ... (image logic) ... */}
                   {(() => {
                     const ownFiles = prod.product_files ?? [];
                     const thumbFile = ownFiles.length > 0
@@ -502,29 +503,29 @@ export default function ProductsPage() {
                   })()}
                 </td>
                 <td>
-                  <strong style={{ display: 'block' }}>
+                  <strong style={{ display: 'block', fontSize: '0.85rem' }}>
                     {prod.nome}
                     {prod.is_variation && <span className="variation-badge">VAR</span>}
                   </strong>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{prod.codigo_sku}</span>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{prod.codigo_sku}</span>
                 </td>
-                <td>
+                <td className="hide-tablet">
                   {prod.category ? (
                     <span style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', background: 'var(--bg-sidebar)', borderRadius: '4px', borderLeft: `2px solid ${prod.category.cor}` }}>
                       {prod.category.nome}
                     </span>
-                  ) : <span style={{ color: 'var(--text-muted)' }}>Sem Categoria</span>}
+                  ) : <span style={{ color: 'var(--text-muted)' }}>—</span>}
                 </td>
-                <td>
+                <td className="hide-mobile">
                   <span style={{ fontWeight: 600, color: prod.quantidade_estoque <= 0 ? 'var(--danger)' : 'var(--text)' }}>
-                    {prod.quantidade_estoque} un
+                    {prod.quantidade_estoque}
                   </span>
                 </td>
-                <td style={{ fontWeight: 600 }}>{formatMoney(prod.preco_venda)}</td>
-                <td style={{ fontWeight: 600, color: (prod as any).preco_promocional ? 'var(--success)' : 'var(--text-muted)' }}>
+                <td style={{ fontWeight: 600, fontSize: '0.85rem' }}>{formatMoney(prod.preco_venda)}</td>
+                <td className="hide-tablet" style={{ fontWeight: 600, color: (prod as any).preco_promocional ? 'var(--success)' : 'var(--text-muted)' }}>
                   {(prod as any).preco_promocional ? formatMoney(Number((prod as any).preco_promocional)) : '—'}
                 </td>
-                <td>
+                <td className="hide-tablet">
                   {prod.ativo ? 
                     <span className="status-badge badge-success"><CheckCircle size={12}/> Ativo</span> : 
                     <span className="status-badge badge-danger"><XCircle size={12}/> Inativo</span>

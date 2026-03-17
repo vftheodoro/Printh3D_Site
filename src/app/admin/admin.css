@@ -252,7 +252,11 @@ a:hover {
     left: 0;
     bottom: 0;
     z-index: 100;
-    transition: transform 0.3s ease;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar.open {
+    transform: translateX(0);
 }
 
 .sidebar-brand {
@@ -422,10 +426,7 @@ a:hover {
 /* --- CONTENT AREA --- */
 .content-area {
     flex: 1;
-    margin-left: var(--sidebar-w);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+    transition: var(--transition);
 }
 
 .content-header {
@@ -2538,38 +2539,153 @@ input[type="checkbox"] {
 /* ============================================
    RESPONSIVE ADDITIONS
    ============================================ */
-@media (max-width: 768px) {
-    .categories-grid {
+@media (max-width: 1024px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
+        box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+    }
+
+    .content-area {
+        margin-left: 0;
+    }
+
+    .btn-hamburger {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .sidebar-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        z-index: 90;
+        opacity: 0;
+        visibility: hidden;
+        transition: var(--transition);
+    }
+
+    .sidebar-backdrop.show {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .section-header h1 {
+        font-size: 1.15rem;
+    }
+
+    .kpi-grid {
         grid-template-columns: 1fr;
     }
 
-    .products-toolbar {
-        flex-direction: column;
-        align-items: stretch;
+    .form-row, .form-grid {
+        grid-template-columns: 1fr;
     }
 
-    .products-toolbar select {
-        width: 100%;
-        min-width: 0;
+    .content-main {
+        padding: 1.25rem;
     }
 
-    #products-grid-view {
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    }
-
-    .modal-tabs {
+    .table-container {
         overflow-x: auto;
     }
 
+    table {
+        min-width: 600px;
+    }
+}
+
+@media (max-width: 768px) {
+    .content-header {
+        padding: 0 1rem;
+    }
+
+    .header-user .user-name {
+        display: none;
+    }
+
+    .kpi-card {
+        padding: 0.85rem;
+    }
+
+    .kpi-card .kpi-value {
+        font-size: 1rem;
+    }
+
+    /* Otimização para visualização de grade em mobile */
+    #products-grid-view {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 0.75rem;
+    }
+    
     .modal-wide {
         max-width: 95vw;
+        padding: 1rem;
+    }
+}
+
+/* --- RESPONSIVE UTILITIES --- */
+@media (max-width: 768px) {
+    .hide-mobile {
+        display: none !important;
+    }
+    
+    .products-toolbar-card, .page-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
     }
 
-    .file-gallery {
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    .products-search, .toolbar-search {
+        width: 100%;
     }
 
-    .charts-grid {
-        grid-template-columns: 1fr;
+    .products-filter, .filter-group {
+        width: 100%;
+    }
+
+    .products-filter select, .filter-group select {
+        width: 100%;
+    }
+}
+
+@media (max-width: 1024px) {
+    .hide-tablet {
+        display: none !important;
+    }
+}
+
+/* Refinamento de Tabelas */
+.table-container {
+    position: relative;
+    width: 100%;
+}
+
+.table-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 15px;
+    background: linear-gradient(to left, rgba(0,0,0,0.2), transparent);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+@media (max-width: 768px) {
+    .table-container::after {
+        opacity: 1;
     }
 }

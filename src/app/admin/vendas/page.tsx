@@ -365,13 +365,13 @@ export default function SalesPage() {
         <table>
           <thead>
             <tr>
-              <th>ID / Data</th>
-              <th>Cliente</th>
+              <th className="hide-mobile">ID</th>
+              <th>Data / Cliente</th>
               <th>Item / Pedido</th>
-              <th>Vendedor</th>
-              <th>Pagamento</th>
+              <th className="hide-tablet">Vendedor</th>
+              <th className="hide-tablet">Pagamento</th>
               <th>Valor Total</th>
-              <th>Status</th>
+              <th className="hide-mobile">Status</th>
               <th style={{ textAlign: 'right' }}>Ações</th>
             </tr>
           </thead>
@@ -385,30 +385,44 @@ export default function SalesPage() {
               const isPending = sale.valor_devido > 0;
               return (
                 <tr key={sale.id}>
-                  <td>
-                    <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'block' }}>#{sale.id}</span>
-                    <span style={{ fontSize: '0.8rem' }}><Calendar size={12} style={{ display: 'inline', marginRight: '4px', opacity: 0.7 }}/>{date.toLocaleDateString('pt-BR')}</span>
+                  <td className="hide-mobile">
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>#{sale.id}</span>
                   </td>
                   <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--bg-input)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
-                        <User size={14} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <div className="hide-mobile" style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'var(--bg-input)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
+                        <User size={12} />
                       </div>
-                      <strong style={{ fontSize: '0.9rem' }}>{sale.cliente}</strong>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <strong style={{ fontSize: '0.85rem' }}>{sale.cliente}</strong>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                          <Calendar size={10} style={{ display: 'inline', marginRight: '3px', marginBottom: '1px' }}/>
+                          {date.toLocaleDateString('pt-BR')}
+                        </span>
+                      </div>
                     </div>
                   </td>
-                  <td>{sale.item_nome}</td>
-                  <td><span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{sale.vendedor?.nome || 'Sistema'}</span></td>
-                  <td>
+                  <td style={{ fontSize: '0.85rem' }}>{sale.item_nome}</td>
+                  <td className="hide-tablet"><span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{sale.vendedor?.nome || 'Sistema'}</span></td>
+                  <td className="hide-tablet">
                     <span className="status-badge badge-neutral">
                       {sale.tipo_pagamento}
                     </span>
                   </td>
-                  <td style={{ fontWeight: 600 }}>{formatMoney(sale.valor_venda)}</td>
                   <td>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <strong style={{ fontSize: '0.85rem' }}>{formatMoney(sale.valor_venda)}</strong>
+                      {isPending && (
+                        <span className="status-badge badge-warning" style={{ fontSize: '0.65rem', padding: '1px 4px', marginTop: '4px' }}>
+                          Faltam {formatMoney(sale.valor_devido)}
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="hide-mobile">
                     {isPending ? (
                       <span className="status-badge badge-warning">
-                        <AlertTriangle size={12}/> Faltam {formatMoney(sale.valor_devido)}
+                        <AlertTriangle size={12}/> Pendente
                       </span>
                     ) : (
                       <span className="status-badge badge-success">

@@ -49,10 +49,10 @@ export default function Footer() {
           </div>
 
           {/* Quick Links Group */}
-          <div className="grid grid-cols-2 gap-16">
+          <div className="grid grid-cols-2 gap-8 md:gap-16 w-full md:w-auto">
             <div>
-              <h4 className="text-white font-black text-[10px] uppercase tracking-widest mb-6 opacity-30">Site</h4>
-              <ul className="space-y-3">
+              <h4 className="text-white font-black text-[10px] uppercase tracking-widest mb-6 opacity-30 text-center md:text-left">Site</h4>
+              <ul className="space-y-3 text-center md:text-left">
                 {["Início", "Produtos", "Como Funciona", "Contato"].map((item) => (
                   <li key={item}>
                     <Link 
@@ -66,8 +66,8 @@ export default function Footer() {
               </ul>
             </div>
             <div>
-              <h4 className="text-white font-black text-[10px] uppercase tracking-widest mb-6 opacity-30">Legal</h4>
-              <ul className="space-y-3">
+              <h4 className="text-white font-black text-[10px] uppercase tracking-widest mb-6 opacity-30 text-center md:text-left">Legal</h4>
+              <ul className="space-y-3 text-center md:text-left">
                 <li><Link href="/termos" className="text-slate-500 hover:text-white text-xs font-bold transition-colors">Termos</Link></li>
                 <li><Link href="/privacidade" className="text-slate-500 hover:text-white text-xs font-bold transition-colors">Privacidade</Link></li>
               </ul>
@@ -77,10 +77,10 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-slate-600 text-[10px] font-black uppercase tracking-widest">
+          <p className="text-slate-600 text-[10px] font-black uppercase tracking-widest text-center">
             © 2026 Printh3D — Jacupiranga, SP
           </p>
-          <div className="flex items-center gap-2 text-slate-500 text-[9px] font-black uppercase tracking-widest">
+          <div className="flex items-center gap-2 text-slate-500 text-[9px] font-black uppercase tracking-widest text-center">
             DESIGN & DEV BY 
             <a 
               href="https://vftheodoro.github.io/Portfolio/" 
