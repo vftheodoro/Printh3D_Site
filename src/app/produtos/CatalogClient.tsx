@@ -31,12 +31,12 @@ export default function CatalogClient({ initialProducts, initialCategories }: { 
       <section className="pb-32 px-6 pt-10">
         <div className="max-w-7xl mx-auto">
           
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-12 mb-20">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 lg:gap-12 mb-12 lg:mb-20">
             <div className="max-w-2xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/5 text-blue-500 text-[10px] font-black uppercase tracking-[0.3em] mb-6 border border-blue-500/10 shadow-inner">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/5 text-blue-500 text-[10px] font-black uppercase tracking-[0.3em] mb-4 lg:mb-6 border border-blue-500/10 shadow-inner">
                 <Sparkles className="w-3 h-3" /> Explore nosso acervo
               </div>
-              <h1 className="text-6xl md:text-8xl font-black mb-6 tracking-tighter leading-[0.9]">
+              <h1 className="text-4xl md:text-7xl lg:text-8xl font-black mb-4 lg:mb-6 tracking-tighter leading-[0.9]">
                 Catálogo <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">Premium</span>
               </h1>
               <p className="text-lg text-slate-400 font-medium leading-relaxed max-w-xl">

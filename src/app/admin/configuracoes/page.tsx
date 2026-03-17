@@ -68,15 +68,15 @@ export default function SettingsPage() {
       <div style={{ maxWidth: '800px' }}>
         <form onSubmit={handleSave}>
           
-          <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
-            <h3 style={{ fontSize: '1.1rem', marginBottom: '1.5rem', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className="card" style={{ padding: '1rem lg:1.5rem', marginBottom: '1.25rem' }}>
+            <h3 style={{ fontSize: '1rem lg:1.1rem', marginBottom: '1.25rem', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Droplet size={18} style={{ color: 'var(--accent)' }} /> 
               Matéria Prima (Base)
             </h3>
             
             <div className="form-row">
               <div className="form-group">
-                <label>Custo Padrão do Filamento (R$/kg)</label>
+                <label style={{ fontSize: '0.85rem' }}>Custo Padrão do Filamento (R$/kg)</label>
                 <input 
                   type="number" 
                   step="0.01" 
@@ -86,7 +86,7 @@ export default function SettingsPage() {
                 />
               </div>
               <div className="form-group">
-                <label>Margem Padrão de Lucro (%)</label>
+                <label style={{ fontSize: '0.85rem' }}>Margem Padrão de Lucro (%)</label>
                 <input 
                   type="number" 
                   step="0.1" 
@@ -94,12 +94,12 @@ export default function SettingsPage() {
                   onChange={e => setSettings({...settings, margem_padrao: parseFloat(e.target.value)})} 
                   required 
                 />
-                <small style={{ color: 'var(--text-muted)' }}>Ex: 100% dobra o custo de produção.</small>
+                <small style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>Ex: 100% dobra o custo de produção.</small>
               </div>
             </div>
             
             <div className="form-group">
-              <label>Taxa de Falha Estimada (%)</label>
+              <label style={{ fontSize: '0.85rem' }}>Taxa de Falha Estimada (%)</label>
               <input 
                 type="number" 
                 step="0.1" 
@@ -107,19 +107,19 @@ export default function SettingsPage() {
                 onChange={e => setSettings({...settings, percentual_falha: parseFloat(e.target.value)})} 
                 required 
               />
-              <small style={{ color: 'var(--text-muted)' }}>Percentual adicionado ao peso para compensar falhas e suportes.</small>
+              <small style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>Percentual adicionado ao peso para compensar falhas e suportes.</small>
             </div>
           </div>
 
-          <div className="card" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
-            <h3 style={{ fontSize: '1.1rem', marginBottom: '1.5rem', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className="card" style={{ padding: '1rem lg:1.5rem', marginBottom: '1.5rem' }}>
+            <h3 style={{ fontSize: '1rem lg:1.1rem', marginBottom: '1.25rem', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Activity size={18} style={{ color: 'var(--warning)' }} /> 
               Custos Operacionais (Energia e Máquina)
             </h3>
             
             <div className="form-row">
               <div className="form-group">
-                <label>Tarifa de Energia (R$/kWh)</label>
+                <label style={{ fontSize: '0.85rem' }}>Tarifa de Energia (R$/kWh)</label>
                 <input 
                   type="number" 
                   step="0.01" 
@@ -127,23 +127,23 @@ export default function SettingsPage() {
                   onChange={e => setSettings({...settings, custo_kwh: parseFloat(e.target.value)})} 
                   required 
                 />
-                <small style={{ color: 'var(--text-muted)' }}>Consulte na sua conta de luz (incluindo taxas).</small>
+                <small style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>Consulte na sua conta de luz (incluindo taxas).</small>
               </div>
               <div className="form-group">
-                <label>Consumo Médio da Impressora (W)</label>
+                <label style={{ fontSize: '0.85rem' }}>Consumo Médio da Impressora (W)</label>
                 <input 
                   type="number" 
                   value={settings.consumo_maquina_w} 
                   onChange={e => setSettings({...settings, consumo_maquina_w: parseInt(e.target.value)})} 
                   required 
                 />
-                <small style={{ color: 'var(--text-muted)' }}>Ex: Ender 3 opera em média com 150W-250W durante impressão.</small>
+                <small style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>Ex: Ender 3 opera em média com 150W-250W durante impressão.</small>
               </div>
             </div>
 
             <div className="form-row">
               <div className="form-group">
-                <label>Custo Hora de Máquina (R$/h)</label>
+                <label style={{ fontSize: '0.85rem' }}>Custo Hora de Máquina (R$/h)</label>
                 <input 
                   type="number" 
                   step="0.01" 
@@ -151,10 +151,10 @@ export default function SettingsPage() {
                   onChange={e => setSettings({...settings, custo_hora_maquina: parseFloat(e.target.value)})} 
                   required 
                 />
-                <small style={{ color: 'var(--text-muted)' }}>Valor cobrado por desgaste / tempo imobilizado.</small>
+                <small style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>Valor cobrado por desgaste / tempo imobilizado.</small>
               </div>
               <div className="form-group">
-                <label>Depreciação e Manutenção (%)</label>
+                <label style={{ fontSize: '0.85rem' }}>Depreciação e Manutenção (%)</label>
                 <input 
                   type="number" 
                   step="0.1" 
@@ -162,7 +162,7 @@ export default function SettingsPage() {
                   onChange={e => setSettings({...settings, depreciacao_percentual: parseFloat(e.target.value)})} 
                   required 
                 />
-                <small style={{ color: 'var(--text-muted)' }}>Percentual extra pelo desgaste dos equipamentos.</small>
+                <small style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>Percentual extra pelo desgaste dos equipamentos.</small>
               </div>
             </div>
           </div>

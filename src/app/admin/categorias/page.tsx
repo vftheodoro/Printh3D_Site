@@ -111,31 +111,31 @@ export default function CategoriesPage() {
       {loading ? (
         <div className="p-4 text-[var(--text-muted)]">Carregando...</div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '0.85rem' }}>
           {categories.map(cat => (
-            <div key={cat.id} className="card" style={{ borderLeft: `4px solid ${cat.cor}`, position: 'relative', marginBottom: 0 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                  <div style={{ padding: '0.8rem', background: 'var(--bg-input)', borderRadius: 'var(--radius-sm)', color: cat.cor }}>
+            <div key={cat.id} className="card" style={{ borderLeft: `4px solid ${cat.cor}`, position: 'relative', marginBottom: 0, padding: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                  <div style={{ padding: '0.7rem', background: 'var(--bg-input)', borderRadius: 'var(--radius-sm)', color: cat.cor, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {IconComponent(cat.icone)}
                   </div>
                   <div>
-                    <h3 style={{ margin: 0, marginBottom: '0.2rem', fontSize: '1.1rem' }}>{cat.nome}</h3>
-                    <span style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', background: 'var(--bg-sidebar)', borderRadius: '4px', border: '1px solid var(--border)' }}>
+                    <h3 style={{ margin: 0, marginBottom: '0.2rem', fontSize: '1rem', fontWeight: 700 }}>{cat.nome}</h3>
+                    <span style={{ fontSize: '0.7rem', padding: '0.15rem 0.4rem', background: 'var(--bg-sidebar)', borderRadius: '4px', border: '1px solid var(--border)' }}>
                       SKU: {cat.prefixo}
                     </span>
                   </div>
                 </div>
-                <div className="action-btns">
-                  <button className="btn btn-secondary" style={{ padding: '0.4rem' }} onClick={() => openModal(cat)}>
-                    <Edit2 size={14} />
+                <div className="action-btns" style={{ display: 'flex', gap: '0.35rem' }}>
+                  <button className="btn btn-secondary" style={{ padding: '0.35rem' }} onClick={() => openModal(cat)}>
+                    <Edit2 size={13} />
                   </button>
-                  <button className="btn btn-danger-ghost" style={{ padding: '0.4rem' }} onClick={() => handleDelete(cat.id)}>
-                    <Trash2 size={14} />
+                  <button className="btn btn-danger-ghost" style={{ padding: '0.35rem' }} onClick={() => handleDelete(cat.id)}>
+                    <Trash2 size={13} />
                   </button>
                 </div>
               </div>
-              {cat.descricao && <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>{cat.descricao}</p>}
+              {cat.descricao && <p style={{ marginTop: '0.85rem', fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>{cat.descricao}</p>}
             </div>
           ))}
         </div>

@@ -172,11 +172,11 @@ export default function ExpensesPage() {
         <table>
           <thead>
             <tr>
-              <th>Data</th>
+              <th className="hide-mobile">Data</th>
               <th>Descrição</th>
-              <th>Categoria</th>
-              <th>Fornecedor</th>
-              <th>Pagamento</th>
+              <th className="hide-tablet">Categoria</th>
+              <th className="hide-tablet">Fornecedor</th>
+              <th className="hide-tablet">Pagamento</th>
               <th>Valor Total</th>
               <th style={{ textAlign: 'right' }}>Ações</th>
             </tr>
@@ -190,20 +190,26 @@ export default function ExpensesPage() {
               const date = exp.data_gasto ? new Date(exp.data_gasto).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '';
               return (
                 <tr key={exp.id}>
-                  <td>{date}</td>
-                  <td><strong>{exp.descricao}</strong></td>
+                  <td className="hide-mobile">{date}</td>
                   <td>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <strong style={{ fontSize: '0.85rem' }}>{exp.descricao}</strong>
+                        <span className="hide-mobile" style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{exp.categoria}</span>
+                        <span className="show-mobile-inline" style={{ display: 'none', fontSize: '10px', color: 'var(--text-muted)' }}>{date}</span>
+                    </div>
+                  </td>
+                  <td className="hide-tablet">
                     <span style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', background: 'var(--bg-input)', borderRadius: '4px', color: 'var(--info)' }}>
                       {exp.categoria}
                     </span>
                   </td>
-                  <td>{exp.fornecedor || '-'}</td>
-                  <td>{exp.tipo_pagamento}</td>
-                  <td style={{ fontWeight: 600, color: 'var(--danger)' }}>{formatMoney(exp.valor_total)}</td>
+                  <td className="hide-tablet">{exp.fornecedor || '-'}</td>
+                  <td className="hide-tablet">{exp.tipo_pagamento}</td>
+                  <td style={{ fontWeight: 600, color: 'var(--danger)', fontSize: '0.85rem' }}>{formatMoney(exp.valor_total)}</td>
                   <td style={{ textAlign: 'right' }}>
                       <div className="action-btns">
-                      <button className="btn btn-secondary" style={{ padding: '0.4rem' }} onClick={() => openModal(exp)}><Edit2 size={14} /></button>
-                      <button className="btn btn-danger-ghost" style={{ padding: '0.4rem' }} onClick={() => handleDelete(exp.id)}><Trash2 size={14} /></button>
+                      <button className="btn btn-secondary" style={{ padding: '0.35rem' }} onClick={() => openModal(exp)}><Edit2 size={13} /></button>
+                      <button className="btn btn-danger-ghost" style={{ padding: '0.35rem' }} onClick={() => handleDelete(exp.id)}><Trash2 size={13} /></button>
                     </div>
                   </td>
                 </tr>

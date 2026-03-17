@@ -76,11 +76,11 @@ export default function ProductDetailClient({ product }: { product: Product | un
     <main className="min-h-screen flex flex-col bg-slate-950 text-white">
       <Navbar />
 
-      <section className="pt-32 pb-20 px-6">
+      <section className="pt-24 lg:pt-32 pb-12 lg:pb-20 px-6">
         <div className="max-w-6xl mx-auto">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-12 group"
+            className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-8 lg:mb-12 group"
           >
             <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
             Voltar
@@ -149,7 +149,7 @@ export default function ProductDetailClient({ product }: { product: Product | un
                 </span>
               </div>
 
-              <h1 className="text-4xl md:text-5xl font-extrabold mb-6 leading-tight">
+              <h1 className="text-3xl md:text-5xl font-extrabold mb-4 lg:mb-6 leading-tight">
                 {selectedVariation?.name || product.name}
               </h1>
 
@@ -161,11 +161,11 @@ export default function ProductDetailClient({ product }: { product: Product | un
               </div>
 
               {product.variations && product.variations.length > 0 && (
-                <div className="mb-8 p-6 bg-slate-900/40 rounded-2xl border border-white/5">
-                  <label className="flex items-center gap-2 text-sm font-bold mb-4">
+                <div className="mb-8 p-4 lg:p-6 bg-slate-900/40 rounded-2xl border border-white/5">
+                  <label className="flex items-center gap-2 text-sm font-bold mb-3 lg:mb-4">
                     <ChevronDown className="w-4 h-4 text-blue-500" /> Variações Disponíveis
                   </label>
-                  <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                  <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
                     {product.variations.map((variation) => (
                       <button
                         key={variation.id}
@@ -192,7 +192,7 @@ export default function ProductDetailClient({ product }: { product: Product | un
                 </div>
               )}
 
-              <p className="text-slate-400 leading-relaxed mb-10 text-lg font-medium">
+              <p className="text-slate-400 leading-relaxed mb-8 lg:mb-10 text-base lg:text-lg font-medium">
                 {product.fullDesc}
               </p>
 
