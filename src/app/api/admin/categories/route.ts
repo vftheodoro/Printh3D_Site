@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     const { data: existing } = await supabase.from('categories')
       .select('id')
       .or(`nome.ilike.${json.nome},prefixo.ilike.${json.prefixo}`)
-      .single();
+      .maybeSingle();
 
     if (existing) {
       return NextResponse.json({ error: 'Já existe uma categoria com esse nome ou prefixo.' }, { status: 400 });

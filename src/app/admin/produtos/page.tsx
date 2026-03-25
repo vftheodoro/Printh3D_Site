@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Package, Plus, Edit2, Trash2, Search, Filter, Image as ImageIcon, CheckCircle, XCircle, Upload, Star } from 'lucide-react';
+import { Package, Plus, Edit2, Trash2, Search, Filter, Image as ImageIcon, CheckCircle, XCircle, Upload, Star, Save } from 'lucide-react';
 
 interface Category {
   id: number;
@@ -70,6 +70,8 @@ export default function ProductsPage() {
   
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeletingId, setIsDeletingId] = useState<number | null>(null);
   
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -336,6 +338,7 @@ export default function ProductsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSaving(true);
     const url = editingId ? `/api/admin/products/${editingId}` : '/api/admin/products';
     const method = editingId ? 'PUT' : 'POST';
 
@@ -409,17 +412,22 @@ export default function ProductsPage() {
       loadData();
     } catch (err: any) {
       alert(err.message);
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleDelete = async (id: number) => {
     if (!confirm('Excluir este produto? Ele será movido para a lixeira.')) return;
+    setIsDeletingId(id);
     try {
       const res = await fetch(`/api/admin/products/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error((await res.json()).error);
       loadData();
     } catch (err: any) {
       alert(err.message);
+    } finally {
+      setIsDeletingId(null);
     }
   };
 
@@ -534,8 +542,10 @@ export default function ProductsPage() {
                 </td>
                 <td style={{ textAlign: 'right' }}>
                   <div className="action-btns">
-                    <button className="btn btn-secondary" style={{ padding: '0.4rem' }} onClick={() => openModal(prod)}><Edit2 size={14} /></button>
-                    <button className="btn btn-danger-ghost" style={{ padding: '0.4rem' }} onClick={() => handleDelete(prod.id)}><Trash2 size={14} /></button>
+                    <button className="btn btn-secondary" style={{ padding: '0.4rem' }} onClick={() => openModal(prod)} disabled={isDeletingId === prod.id}><Edit2 size={14} /></button>
+                    <button className="btn btn-danger-ghost" style={{ padding: '0.4rem' }} onClick={() => handleDelete(prod.id)} disabled={isDeletingId === prod.id}>
+                      {isDeletingId === prod.id ? <span style={{fontSize:'10px'}}>...</span> : <Trash2 size={14} />}
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -851,13 +861,15 @@ export default function ProductsPage() {
             </div>
             
             <div className="modal-header product-editor-footer">
-              <button type="button" className="btn btn-secondary" onClick={closeModal}>Cancelar</button>
+              <button type="button" className="btn btn-secondary" onClick={closeModal} disabled={isSaving}>Cancelar</button>
               {editingId && (
-                <button type="button" className="btn btn-secondary" onClick={handleCreateVariationFromCurrent}>
+                <button type="button" className="btn btn-secondary" onClick={handleCreateVariationFromCurrent} disabled={isSaving}>
                   <Plus size={14} /> Adicionar Variação
                 </button>
               )}
-              <button type="submit" form="product-form" className="btn btn-primary">Salvar Produto</button>
+              <button type="submit" form="product-form" className="btn btn-primary" disabled={isSaving}>
+                <Save size={16} /> {isSaving ? 'Salvando...' : 'Salvar Produto'}
+              </button>
             </div>
           </div>
         </div>

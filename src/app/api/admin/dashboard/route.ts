@@ -80,7 +80,11 @@ export async function GET() {
     const categories = Array.isArray(categoriesRaw) ? categoriesRaw : [];
 
     const categoryById = new Map<number, { nome: string; cor?: string }>();
-    categories.forEach((c: any) => categoryById.set(Number(c.id), { nome: c.nome, cor: c.cor }));
+    const categoryByName = new Map<string, { id: number, nome: string; cor?: string }>();
+    categories.forEach((c: any) => {
+      categoryById.set(Number(c.id), { nome: c.nome, cor: c.cor });
+      categoryByName.set(String(c.nome).trim().toLowerCase(), { id: c.id, nome: c.nome, cor: c.cor });
+    });
 
     const productById = new Map<number, any>();
     products.forEach((p: any) => productById.set(Number(p.id), p));
@@ -128,9 +132,27 @@ export async function GET() {
       }
 
       const product = productById.get(Number(sale.product_id));
-      const categoryId = product?.category_id ? Number(product.category_id) : 0;
-      const cat = categoryById.get(categoryId);
-      const key = String(categoryId || 0);
+      let categoryId = product?.category_id ? Number(product.category_id) : 0;
+      let cat = categoryById.get(categoryId);
+
+      if (!categoryId) {
+        // Try extracting from raw item_nome like we do in Vendas frontend
+        const cMatch = String(sale.item_nome || '').match(/\s*\[(.*?)\]$/);
+        if (cMatch) {
+          const parsedCatName = cMatch[1];
+          const foundCat = categoryByName.get(parsedCatName.trim().toLowerCase());
+          if (foundCat) {
+            categoryId = foundCat.id;
+            cat = foundCat;
+          } else {
+            // Group under the extracted string anyway, just assigned a dynamic key
+            categoryId = -1;
+            cat = { nome: parsedCatName, cor: '#00bcff' };
+          }
+        }
+      }
+
+      const key = cat ? String(cat.nome) : '0';
       if (!salesByCategoryMap[key]) {
         salesByCategoryMap[key] = {
           name: cat?.nome || 'Sem categoria',

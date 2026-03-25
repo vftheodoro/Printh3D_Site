@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Contact, Plus, Edit2, Trash2, Search, User, MapPin, Phone, Instagram, AlertTriangle, TrendingUp } from 'lucide-react';
+import { Contact, Plus, Edit2, Trash2, Search, User, MapPin, Phone, Instagram, AlertTriangle, TrendingUp, Save } from 'lucide-react';
 
 interface Client {
   id: number;
@@ -20,6 +20,8 @@ export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeletingId, setIsDeletingId] = useState<number | null>(null);
   
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -71,6 +73,7 @@ export default function ClientsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSaving(true);
     const url = editingId ? `/api/admin/clients/${editingId}` : '/api/admin/clients';
     const method = editingId ? 'PUT' : 'POST';
 
@@ -86,11 +89,14 @@ export default function ClientsPage() {
       loadClients();
     } catch (err: any) {
       alert(err.message);
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleDelete = async (id: number) => {
     if (!confirm('Atenção: Apenas clientes SEM vendas cadastradas podem ser excluídos. Excluir?')) return;
+    setIsDeletingId(id);
     try {
       const res = await fetch(`/api/admin/clients/${id}`, { method: 'DELETE' });
       const data = await res.json();
@@ -98,6 +104,8 @@ export default function ClientsPage() {
       loadClients();
     } catch (err: any) {
       alert(err.message);
+    } finally {
+      setIsDeletingId(null);
     }
   };
 
@@ -176,11 +184,11 @@ export default function ClientsPage() {
             </div>
 
             <div className="action-btns" style={{ marginTop: '1rem' }}>
-             <button className="btn btn-secondary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => openModal(client)}>
+             <button className="btn btn-secondary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => openModal(client)} disabled={isDeletingId === client.id}>
                <Edit2 size={14} /> Editar
              </button>
-             <button className="btn btn-danger-ghost" style={{ padding: '0.4rem' }} onClick={() => handleDelete(client.id)}>
-               <Trash2 size={14} />
+             <button className="btn btn-danger-ghost" style={{ padding: '0.4rem' }} onClick={() => handleDelete(client.id)} disabled={isDeletingId === client.id}>
+               {isDeletingId === client.id ? <span style={{fontSize:'10px'}}>...</span> : <Trash2 size={14} />}
              </button>
             </div>
             
@@ -234,8 +242,10 @@ export default function ClientsPage() {
             </div>
             
             <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" onClick={closeModal}>Cancelar</button>
-              <button type="submit" form="client-form" className="btn btn-primary">Salvar Cliente</button>
+              <button type="button" className="btn btn-secondary" onClick={closeModal} disabled={isSaving}>Cancelar</button>
+              <button type="submit" form="client-form" className="btn btn-primary" disabled={isSaving}>
+                <Save size={16} /> {isSaving ? 'Salvando...' : 'Salvar Cliente'}
+              </button>
             </div>
           </div>
         </div>

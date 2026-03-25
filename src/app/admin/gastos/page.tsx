@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Receipt, Plus, Edit2, Trash2, Filter } from 'lucide-react';
+import { Receipt, Plus, Edit2, Trash2, Filter, Save } from 'lucide-react';
 
 interface Expense {
   id: number;
@@ -16,6 +16,8 @@ interface Expense {
 export default function ExpensesPage() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeletingId, setIsDeletingId] = useState<number | null>(null);
   
   // Filters
   const [categoryFilter, setCategoryFilter] = useState('');
@@ -95,6 +97,7 @@ export default function ExpensesPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSaving(true);
     const url = editingId ? `/api/admin/expenses/${editingId}` : '/api/admin/expenses';
     const method = editingId ? 'PUT' : 'POST';
 
@@ -110,17 +113,22 @@ export default function ExpensesPage() {
       loadExpenses();
     } catch (err: any) {
       alert(err.message);
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleDelete = async (id: number) => {
     if (!confirm('Excluir este gasto? Ele será movido para a lixeira.')) return;
+    setIsDeletingId(id);
     try {
       const res = await fetch(`/api/admin/expenses/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error((await res.json()).error);
       loadExpenses();
     } catch (err: any) {
       alert(err.message);
+    } finally {
+      setIsDeletingId(null);
     }
   };
 
@@ -208,8 +216,10 @@ export default function ExpensesPage() {
                   <td style={{ fontWeight: 600, color: 'var(--danger)', fontSize: '0.85rem' }}>{formatMoney(exp.valor_total)}</td>
                   <td style={{ textAlign: 'right' }}>
                       <div className="action-btns">
-                      <button className="btn btn-secondary" style={{ padding: '0.35rem' }} onClick={() => openModal(exp)}><Edit2 size={13} /></button>
-                      <button className="btn btn-danger-ghost" style={{ padding: '0.35rem' }} onClick={() => handleDelete(exp.id)}><Trash2 size={13} /></button>
+                      <button className="btn btn-secondary" style={{ padding: '0.35rem' }} onClick={() => openModal(exp)} disabled={isDeletingId === exp.id}><Edit2 size={13} /></button>
+                      <button className="btn btn-danger-ghost" style={{ padding: '0.35rem' }} onClick={() => handleDelete(exp.id)} disabled={isDeletingId === exp.id}>
+                        {isDeletingId === exp.id ? <span style={{fontSize:'10px'}}>...</span> : <Trash2 size={13} />}
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -293,8 +303,10 @@ export default function ExpensesPage() {
             </div>
             
             <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" onClick={closeModal}>Cancelar</button>
-              <button type="submit" form="expense-form" className="btn btn-primary">Salvar Gasto</button>
+              <button type="button" className="btn btn-secondary" onClick={closeModal} disabled={isSaving}>Cancelar</button>
+              <button type="submit" form="expense-form" className="btn btn-primary" disabled={isSaving}>
+                <Save size={16} /> {isSaving ? 'Salvando...' : 'Salvar Gasto'}
+              </button>
             </div>
           </div>
         </div>

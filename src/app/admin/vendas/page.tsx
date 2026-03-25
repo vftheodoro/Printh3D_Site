@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Wallet, Plus, Edit2, Trash2, Search, CheckCircle, AlertTriangle, User, Calendar } from 'lucide-react';
+import { Wallet, Plus, Edit2, Trash2, Search, CheckCircle, AlertTriangle, User, Calendar, Save } from 'lucide-react';
 
 interface Sale {
   id: number;
@@ -50,16 +50,19 @@ export default function SalesPage() {
   const [products, setProducts] = useState<ProductOption[]>([]);
   const [coupons, setCoupons] = useState<CouponOption[]>([]);
   const [clients, setClients] = useState<ClientOption[]>([]);
+  const [categorias, setCategorias] = useState<any[]>([]);
   const [productQuery, setProductQuery] = useState('');
   const [showProductSuggestions, setShowProductSuggestions] = useState(false);
   const [showClientSuggestions, setShowClientSuggestions] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeletingId, setIsDeletingId] = useState<number | null>(null);
   
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   
   const initialForm = {
-    cliente: '', cliente_id: '', item_nome: '', product_id: '', cupom_id: '', desconto_percentual: 0, valor_venda: 0, valor_devido: 0, custo_unitario: 0,
+    cliente: '', cliente_id: '', item_nome: '', product_id: '', cupom_id: '', categoria_nome: '', desconto_percentual: 0, valor_venda: 0, valor_devido: 0, custo_unitario: 0,
     tipo_pagamento: 'PIX', parcelas: 1, quantidade: 1, preco_unitario: 0, observacoes: '', data_venda: new Date().toISOString().slice(0, 16)
   };
   const [formData, setFormData] = useState<any>(initialForm);
@@ -138,15 +141,17 @@ export default function SalesPage() {
 
   const loadAuxiliaryData = async () => {
     try {
-      const [productsRes, couponsRes, clientsRes] = await Promise.all([
+      const [productsRes, couponsRes, clientsRes, catRes] = await Promise.all([
         fetch('/api/admin/products'),
         fetch('/api/admin/coupons'),
-        fetch('/api/admin/clients')
+        fetch('/api/admin/clients'),
+        fetch('/api/admin/categories')
       ]);
 
       const productsData = await productsRes.json();
       const couponsData = await couponsRes.json();
       const clientsData = await clientsRes.json();
+      const catData = await catRes.json();
 
       if (Array.isArray(productsData)) {
         setProducts(productsData);
@@ -159,8 +164,12 @@ export default function SalesPage() {
       if (Array.isArray(clientsData)) {
         setClients(clientsData);
       }
+
+      if (Array.isArray(catData)) {
+        setCategorias(catData);
+      }
     } catch (error) {
-      console.error('Falha ao carregar produtos/cupons/clientes', error);
+      console.error('Falha ao carregar produtos/cupons/clientes/categorias', error);
     }
   };
 
@@ -179,12 +188,30 @@ export default function SalesPage() {
 
   const openModal = async (sale?: Sale) => {
     if (sale) {
-      const quantityMatch = String(sale.item_nome || '').match(/\s+x(\d+)$/i);
-      const parsedQuantity = quantityMatch ? Math.max(1, Number(quantityMatch[1]) || 1) : 1;
+      let cleanItemName = String(sale.item_nome || '');
+      let parsedQuantity = 1;
+
+      // Extract quantity ' xN' at the end
+      const qMatch = cleanItemName.match(/\s+x(\d+)$/i);
+      if (qMatch) {
+        parsedQuantity = Math.max(1, Number(qMatch[1]) || 1);
+        cleanItemName = cleanItemName.replace(qMatch[0], '');
+      }
+
+      // Extract category ' [Categoria]' at the end
+      let parsedCategoria = '';
+      const cMatch = cleanItemName.match(/\s*\[(.*?)\]$/);
+      if (cMatch) {
+        parsedCategoria = cMatch[1];
+        cleanItemName = cleanItemName.replace(cMatch[0], '');
+      }
+
       const unitPrice = parsedQuantity > 0 ? Number((Number(sale.valor_venda || 0) / parsedQuantity).toFixed(2)) : Number(sale.valor_venda || 0);
       setEditingId(sale.id);
       setFormData({
         ...sale,
+        item_nome: cleanItemName,
+        categoria_nome: parsedCategoria,
         cliente_id: sale.cliente_id || '',
         product_id: sale.product_id || '',
         cupom_id: sale.cupom_id || '',
@@ -308,6 +335,13 @@ export default function SalesPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSaving(true);
+    
+    let finalItemNome = String(formData.item_nome || '');
+    if (!formData.product_id && formData.categoria_nome) {
+      finalItemNome = `${finalItemNome} [${formData.categoria_nome}]`;
+    }
+
     const url = editingId ? `/api/admin/sales/${editingId}` : '/api/admin/sales';
     const method = editingId ? 'PUT' : 'POST';
 
@@ -316,7 +350,7 @@ export default function SalesPage() {
       const payload = {
         cliente_id: formData.cliente_id ? Number(formData.cliente_id) : null,
         cliente: String(formData.cliente || ''),
-        item_nome: String(formData.item_nome || ''),
+        item_nome: finalItemNome,
         product_id: formData.product_id ? Number(formData.product_id) : null,
         cupom_id: formData.cupom_id ? Number(formData.cupom_id) : null,
         desconto_percentual: Number(formData.desconto_percentual) || 0,
@@ -343,17 +377,22 @@ export default function SalesPage() {
       loadSales();
     } catch (err: any) {
       alert(err.message);
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleDelete = async (id: number) => {
     if (!confirm('Excluir esta venda? Ela será movida para a lixeira.')) return;
+    setIsDeletingId(id);
     try {
       const res = await fetch(`/api/admin/sales/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error((await res.json()).error);
       loadSales();
     } catch (err: any) {
       alert(err.message);
+    } finally {
+      setIsDeletingId(null);
     }
   };
 
@@ -458,8 +497,10 @@ export default function SalesPage() {
                   </td>
                   <td style={{ textAlign: 'right' }}>
                     <div className="action-btns">
-                      <button className="btn btn-secondary" style={{ padding: '0.4rem' }} onClick={() => openModal(sale)}><Edit2 size={14} /></button>
-                      <button className="btn btn-danger-ghost" style={{ padding: '0.4rem' }} onClick={() => handleDelete(sale.id)}><Trash2 size={14} /></button>
+                      <button className="btn btn-secondary" style={{ padding: '0.4rem' }} onClick={() => openModal(sale)} disabled={isDeletingId === sale.id}><Edit2 size={14} /></button>
+                      <button className="btn btn-danger-ghost" style={{ padding: '0.4rem' }} onClick={() => handleDelete(sale.id)} disabled={isDeletingId === sale.id}>
+                        {isDeletingId === sale.id ? <span style={{fontSize:'10px'}}>...</span> : <Trash2 size={14} />}
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -570,6 +611,18 @@ export default function SalesPage() {
                       <input type="text" value={formData.item_nome} onChange={e => setFormData({...formData, item_nome: e.target.value})} required placeholder="O que foi vendido?" />
                     </div>
 
+                    {!formData.product_id && (
+                      <div className="form-group">
+                        <label>Categoria (Opcional - Venda Avulsa)</label>
+                        <select value={formData.categoria_nome || ''} onChange={e => setFormData({...formData, categoria_nome: e.target.value})}>
+                          <option value="">Sem categoria</option>
+                          {categorias.map(c => (
+                            <option key={c.id} value={c.nome}>{c.nome}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
                     <div className="form-group">
                       <label>Quantidade vendida *</label>
                       <input
@@ -652,16 +705,16 @@ export default function SalesPage() {
                       <input type="number" step="0.01" value={formData.valor_devido} onChange={e => setFormData({...formData, valor_devido: parseFloat(e.target.value)})} style={{ borderColor: 'var(--warning-light)' }} />
                       <small style={{ color: 'var(--text-muted)', fontSize: '0.7rem', display: 'block', marginTop: '0.5rem' }}>Coloque 0 se foi pago integralmente.</small>
                     </div>
-
-                  </div>
+                  </div>
 
                 </div>
               </form>
             </div>
-            
             <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" onClick={closeModal}>Cancelar</button>
-              <button type="submit" form="sale-form" className="btn btn-primary">Salvar Venda</button>
+              <button type="button" className="btn btn-secondary" onClick={closeModal} disabled={isSaving}>Cancelar</button>
+              <button type="submit" form="sale-form" className="btn btn-primary" disabled={isSaving}>
+                <Save size={16} /> {isSaving ? 'Salvando...' : 'Salvar Venda'}
+              </button>
             </div>
           </div>
         </div>

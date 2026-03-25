@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Folder, Plus, Edit2, Trash2 } from 'lucide-react';
+import { Folder, Plus, Edit2, Trash2, Save } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 
 interface Category {
@@ -13,9 +13,19 @@ interface Category {
   descricao: string | null;
 }
 
+const AVAILABLE_ICONS = [
+  'Folder', 'Box', 'Cpu', 'Zap', 'Star', 'Heart', 'Shield', 'Tool',
+  'Code', 'Package', 'ShoppingBag', 'Tag', 'Bookmark', 'Gem', 
+  'Gift', 'Database', 'Wrench', 'Lightbulb', 'Music', 'Camera',
+  'PenTool', 'Monitor', 'Smartphone', 'Watch', 'Mouse', 'Keyboard',
+  'Printer', 'Ghost', 'Rocket', 'Swords', 'Crown', 'Trophy', 'Coffee'
+];
+
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeletingId, setIsDeletingId] = useState<number | null>(null);
   
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -59,6 +69,7 @@ export default function CategoriesPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSaving(true);
     const url = editingId ? `/api/admin/categories/${editingId}` : '/api/admin/categories';
     const method = editingId ? 'PUT' : 'POST';
 
@@ -75,11 +86,14 @@ export default function CategoriesPage() {
       loadCategories();
     } catch (err: any) {
       alert(err.message);
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleDelete = async (id: number) => {
     if (!confirm('Tem certeza que deseja excluir esta categoria?')) return;
+    setIsDeletingId(id);
     try {
       const res = await fetch(`/api/admin/categories/${id}`, { method: 'DELETE' });
       if (!res.ok) {
@@ -89,6 +103,8 @@ export default function CategoriesPage() {
       loadCategories();
     } catch (err: any) {
       alert(err.message);
+    } finally {
+      setIsDeletingId(null);
     }
   };
 
@@ -127,11 +143,11 @@ export default function CategoriesPage() {
                   </div>
                 </div>
                 <div className="action-btns" style={{ display: 'flex', gap: '0.35rem' }}>
-                  <button className="btn btn-secondary" style={{ padding: '0.35rem' }} onClick={() => openModal(cat)}>
+                  <button className="btn btn-secondary" style={{ padding: '0.35rem' }} onClick={() => openModal(cat)} disabled={isDeletingId === cat.id}>
                     <Edit2 size={13} />
                   </button>
-                  <button className="btn btn-danger-ghost" style={{ padding: '0.35rem' }} onClick={() => handleDelete(cat.id)}>
-                    <Trash2 size={13} />
+                  <button className="btn btn-danger-ghost" style={{ padding: '0.35rem' }} onClick={() => handleDelete(cat.id)} disabled={isDeletingId === cat.id}>
+                    {isDeletingId === cat.id ? <span style={{fontSize:'10px'}}>...</span> : <Trash2 size={13} />}
                   </button>
                 </div>
               </div>
@@ -166,12 +182,50 @@ export default function CategoriesPage() {
                   </div>
                 </div>
                 <div className="form-group">
-                  <label>Nome do Ícone (Lucide)</label>
-                  <input type="text" value={formData.icone} onChange={e => setFormData({...formData, icone: e.target.value})} placeholder="Ex: Box, Cpu, Zap" />
+                  <label>Ícone da Categoria</label>
+                  <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginTop: '0.5rem', maxHeight: '160px', overflowY: 'auto', padding: '0.5rem', background: 'var(--bg-card)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}>
+                    {AVAILABLE_ICONS.map(iconName => {
+                      const Icon = (LucideIcons as any)[iconName] || LucideIcons.Folder;
+                      const isSelected = formData.icone.toLowerCase() === iconName.toLowerCase();
+                      return (
+                        <button
+                          key={iconName}
+                          type="button"
+                          onClick={() => setFormData({...formData, icone: iconName})}
+                          style={{
+                            padding: '0.5rem',
+                            borderRadius: 'var(--radius-sm)',
+                            border: `2px solid ${isSelected ? formData.cor || 'var(--primary)' : 'transparent'}`,
+                            background: isSelected ? 'var(--bg-input)' : 'transparent',
+                            color: isSelected ? formData.cor || 'var(--primary)' : 'var(--text-muted)',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'all 0.2s',
+                          }}
+                          title={iconName}
+                        >
+                          <Icon size={20} />
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-                <div className="form-actions">
-                  <button type="button" className="btn btn-secondary" onClick={closeModal}>Cancelar</button>
-                  <button type="submit" className="btn btn-primary">Salvar Categoria</button>
+                <div className="form-group" style={{ marginTop: '0.85rem' }}>
+                  <label>Descrição (opcional)</label>
+                  <textarea 
+                    value={formData.descricao || ''} 
+                    onChange={e => setFormData({...formData, descricao: e.target.value})} 
+                    placeholder="Detalhes sobre os tipos de produtos desta categoria..."
+                    rows={2}
+                  />
+                </div>
+                <div className="form-actions" style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                  <button type="button" className="btn btn-secondary" onClick={closeModal} disabled={isSaving}>Cancelar</button>
+                  <button type="submit" className="btn btn-primary" disabled={isSaving}>
+                    <Save size={16} /> {isSaving ? 'Salvando...' : 'Salvar Categoria'}
+                  </button>
                 </div>
               </form>
             </div>
