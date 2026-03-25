@@ -150,8 +150,12 @@ export default function AdminSidebar({
       {/* Sidebar */}
       <nav className={`sidebar ${isSidebarOpen ? 'open' : ''}`} id="sidebar">
         <div className="sidebar-brand">
-          <div className="brand-icon">
-            <Box size={20} strokeWidth={2} />
+          <div style={{ width: '42px', height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '0.2rem' }}>
+            <img 
+              src="/assets/imagens/logos/logo_printh_branca.png" 
+              alt="Printh3D Logo" 
+              style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 0 12px rgba(0, 188, 255, 0.6))' }} 
+            />
           </div>
           <div className="brand-text">
             <h2>Printh<span>3D</span></h2>

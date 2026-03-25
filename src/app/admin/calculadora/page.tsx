@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Calculator as CalcIcon, Plus, Save, Printer, DollarSign, Package } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Calculator as CalcIcon, Plus, Save, Printer, DollarSign, Package, ShoppingCart } from 'lucide-react';
 
 interface SettingsData {
   margem_padrao: number;
@@ -14,6 +15,7 @@ interface SettingsData {
 }
 
 export default function CalculatorPage() {
+  const router = useRouter();
   const [settings, setSettings] = useState<SettingsData | null>(null);
   
   // Step 1: Piece Data
@@ -29,7 +31,10 @@ export default function CalculatorPage() {
   const [outros, setOutros] = useState(0);
   
   // Step 3: Margin Adjustment
-  const [margem, setMargem] = useState(100);
+  const [margemStr, setMargemStr] = useState('100');
+  const [precoStr, setPrecoStr] = useState('');
+  const [isTypingPreco, setIsTypingPreco] = useState(false);
+  const margem = parseFloat(margemStr) || 0;
 
   useEffect(() => {
     // Load base settings
@@ -37,27 +42,25 @@ export default function CalculatorPage() {
       .then(res => res.json())
       .then(data => {
         setSettings(data);
-        setMargem(data.margem_padrao || 100);
+        setMargemStr(String(data.margem_padrao || 100));
       })
       .catch(console.error);
   }, []);
-
-  if (!settings) return <div className="p-8">Carregando parâmetros...</div>;
 
   // --- Calculations System ---
   const horasTotais = tempoH + (tempoMin / 60);
   
   // 1. Matéria Prima
-  const pesoComFalha = peso * (1 + (settings.percentual_falha / 100));
-  const custoMaterial = (pesoComFalha / 1000) * settings.custo_kg;
+  const pesoComFalha = peso * (1 + ((settings?.percentual_falha || 0) / 100));
+  const custoMaterial = (pesoComFalha / 1000) * (settings?.custo_kg || 0);
   
   // 2. Energia
-  const kwPorHora = settings.consumo_maquina_w / 1000;
-  const custoEnergia = horasTotais * kwPorHora * settings.custo_kwh;
+  const kwPorHora = (settings?.consumo_maquina_w || 0) / 1000;
+  const custoEnergia = horasTotais * kwPorHora * (settings?.custo_kwh || 0);
   
   // 3. Máquina (Depreciação + Manutenção)
-  const custoMaquinaBase = horasTotais * settings.custo_hora_maquina;
-  const custoMaquinaTotal = custoMaquinaBase * (1 + (settings.depreciacao_percentual / 100));
+  const custoMaquinaBase = horasTotais * (settings?.custo_hora_maquina || 0);
+  const custoMaquinaTotal = custoMaquinaBase * (1 + ((settings?.depreciacao_percentual || 0) / 100));
   
   // 4. Custos Produção = Material + Energia + Máquina
   const custoProducao = custoMaterial + custoEnergia + custoMaquinaTotal;
@@ -71,6 +74,25 @@ export default function CalculatorPage() {
   // 7. Preço de Venda Base e Final (Margem)
   const lucroDesejado = custoTotal * (margem / 100);
   const precoVendaSugestao = custoTotal + lucroDesejado;
+
+  // Sincroniza o preço sugerido com a string do input quando NÃO estamos digitando no preço
+  useEffect(() => {
+    if (!isTypingPreco) {
+      setPrecoStr(precoVendaSugestao.toFixed(2));
+    }
+  }, [precoVendaSugestao, isTypingPreco]);
+
+  // early return safely placed AFTER all hooks
+  if (!settings) return <div className="p-8">Carregando parâmetros...</div>;
+
+  const handlePrecoManualChange = (valStr: string) => {
+    setPrecoStr(valStr);
+    const val = parseFloat(valStr);
+    if (!isNaN(val) && custoTotal > 0) {
+      const novaMargem = ((val - custoTotal) / custoTotal) * 100;
+      setMargemStr(novaMargem > 0 ? novaMargem.toFixed(2) : "0");
+    }
+  };
 
   const formatMoney = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val || 0);
 
@@ -104,6 +126,14 @@ export default function CalculatorPage() {
     } catch (err: any) {
       alert(err.message);
     }
+  };
+
+  const handleRegisterDirectSale = () => {
+    if (!nome) return alert('Dê um nome ao projeto/peça (Step 1) para poder registrar a venda.');
+    const paramNome = encodeURIComponent(nome);
+    const paramCusto = custoTotal.toFixed(2);
+    const paramPreco = precoVendaSugestao.toFixed(2);
+    router.push(`/admin/vendas?action=newSale&nome=${paramNome}&custo=${paramCusto}&preco=${paramPreco}`);
   };
 
   return (
@@ -213,17 +243,44 @@ export default function CalculatorPage() {
                <DollarSign size={20} /> Preço Final
             </h3>
             
-            <div className="form-group">
-              <label>Ajuste sua Margem de Lucro (%)</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <input type="range" min="0" max="500" value={margem} onChange={e => setMargem(parseFloat(e.target.value))} style={{ flex: 1 }} />
-                <input type="number" style={{ width: '80px', padding: '0.4rem', textAlign: 'center' }} value={margem} onChange={e => setMargem(parseFloat(e.target.value))} />
+            <div className="form-row" style={{ alignItems: 'flex-start' }}>
+              <div className="form-group">
+                <label>Margem de Lucro (%)</label>
+                <div style={{ position: 'relative' }}>
+                  <input 
+                    type="number" 
+                    min="0" 
+                    value={margemStr} 
+                    onChange={e => setMargemStr(e.target.value)} 
+                    onFocus={() => setIsTypingPreco(false)}
+                    style={{ fontSize: '1.2rem', fontWeight: 'bold', paddingRight: '2.5rem', borderColor: 'var(--success-light)' }} 
+                  />
+                  <span style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--success)', fontWeight: 'bold' }}>%</span>
+                </div>
+                <small style={{ color: 'var(--success)', display: 'block', marginTop: '0.5rem' }}>Lucro Bruto: {formatMoney(lucroDesejado)}</small>
               </div>
-              <small style={{ color: 'var(--success)', display: 'block', marginTop: '0.5rem' }}>Lucro Bruto Projetado: {formatMoney(lucroDesejado)}</small>
+
+              <div className="form-group">
+                <label>Preço de Venda Praticado</label>
+                <div style={{ position: 'relative' }}>
+                  <span style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontWeight: 'bold' }}>R$</span>
+                  <input 
+                    type="number" 
+                    step="0.01" 
+                    min="0" 
+                    value={precoStr} 
+                    onFocus={() => setIsTypingPreco(true)}
+                    onBlur={() => setIsTypingPreco(false)}
+                    onChange={e => handlePrecoManualChange(e.target.value)} 
+                    style={{ fontSize: '1.2rem', fontWeight: 'bold', paddingLeft: '2.8rem' }} 
+                  />
+                </div>
+                <small style={{ color: 'var(--text-muted)', display: 'block', marginTop: '0.5rem' }}>Ajusta a margem ao lado.</small>
+              </div>
             </div>
 
             <div style={{ textAlign: 'center', padding: '1.5rem 0 0.5rem 0', borderTop: '1px solid var(--border)', marginTop: '1.5rem' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', display: 'block', marginBottom: '0.5rem' }}>Sugestão de Venda</span>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', display: 'block', marginBottom: '0.5rem' }}>Preço de Venda</span>
               <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text)', textShadow: '0 0 20px rgba(0, 188, 255, 0.2)' }}>
                 {formatMoney(precoVendaSugestao)}
               </div>
@@ -232,6 +289,9 @@ export default function CalculatorPage() {
             <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
               <button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center', padding: '0.8rem' }} onClick={handleSaveProduct}>
                  <Save size={16} /> Salvar Produto
+              </button>
+              <button className="btn btn-secondary" style={{ flex: 1, justifyContent: 'center', padding: '0.8rem', background: 'var(--bg-input)', color: 'var(--text)' }} onClick={handleRegisterDirectSale}>
+                 <ShoppingCart size={16} /> Registrar Venda Direta
               </button>
             </div>
           </div>

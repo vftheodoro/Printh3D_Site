@@ -23,6 +23,7 @@ interface ProductOption {
   id: number;
   nome: string;
   preco_venda: number;
+  custo_total?: number;
 }
 
 interface CouponOption {
@@ -58,7 +59,7 @@ export default function SalesPage() {
   const [editingId, setEditingId] = useState<number | null>(null);
   
   const initialForm = {
-    cliente: '', cliente_id: '', item_nome: '', product_id: '', cupom_id: '', desconto_percentual: 0, valor_venda: 0, valor_devido: 0,
+    cliente: '', cliente_id: '', item_nome: '', product_id: '', cupom_id: '', desconto_percentual: 0, valor_venda: 0, valor_devido: 0, custo_unitario: 0,
     tipo_pagamento: 'PIX', parcelas: 1, quantidade: 1, preco_unitario: 0, observacoes: '', data_venda: new Date().toISOString().slice(0, 16)
   };
   const [formData, setFormData] = useState<any>(initialForm);
@@ -110,6 +111,26 @@ export default function SalesPage() {
   useEffect(() => {
     loadSales();
   }, [search, statusFilter]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('action') === 'newSale') {
+      const nome = params.get('nome') || '';
+      const custo = Number(params.get('custo')) || 0;
+      const preco = Number(params.get('preco')) || 0;
+      
+      setFormData({
+        cliente: '', cliente_id: '', product_id: '', cupom_id: '', desconto_percentual: 0, valor_devido: 0,
+        tipo_pagamento: 'PIX', parcelas: 1, quantidade: 1, observacoes: '', data_venda: new Date().toISOString().slice(0, 16),
+        item_nome: nome,
+        custo_unitario: custo,
+        valor_venda: preco,
+        preco_unitario: preco
+      });
+      setIsModalOpen(true);
+      window.history.replaceState({}, '', '/admin/vendas');
+    }
+  }, []);
 
   useEffect(() => {
     loadAuxiliaryData();
@@ -169,6 +190,7 @@ export default function SalesPage() {
         cupom_id: sale.cupom_id || '',
         quantidade: parsedQuantity,
         preco_unitario: unitPrice,
+        custo_unitario: 0,
         data_venda: new Date(sale.data_venda).toISOString().slice(0, 16)
       });
       setProductQuery(sale.item_nome || '');
@@ -231,6 +253,7 @@ export default function SalesPage() {
         product_id: '',
         item_nome: '',
         preco_unitario: 0,
+        custo_unitario: 0,
         quantidade: prev.quantidade || 1,
         valor_venda: 0,
         desconto_percentual: 0
@@ -246,6 +269,7 @@ export default function SalesPage() {
       product_id: product.id,
       item_nome: product.nome,
       preco_unitario: Number(product.preco_venda) || 0,
+      custo_unitario: Number(product.custo_total) || 0,
       valor_venda: next.valor_venda,
       desconto_percentual: next.desconto_percentual
     }));
@@ -303,6 +327,8 @@ export default function SalesPage() {
         observacoes: formData.observacoes ? String(formData.observacoes) : null,
         quantidade: Math.max(1, Number(formData.quantidade) || 1),
         preco_unitario: Number(formData.preco_unitario) || 0,
+        custo_unitario: Number(formData.custo_unitario) || 0,
+        lucro: Number(formData.valor_venda) - ((Number(formData.custo_unitario) || 0) * Math.max(1, Number(formData.quantidade) || 1)),
         data_venda: new Date(formData.data_venda).toISOString()
       };
 
@@ -466,6 +492,7 @@ export default function SalesPage() {
                           type="text"
                           value={formData.cliente}
                           onFocus={() => setShowClientSuggestions(true)}
+                          onBlur={() => setTimeout(() => setShowClientSuggestions(false), 200)}
                           onChange={e => setFormData({ ...formData, cliente: e.target.value, cliente_id: '' })}
                           required
                           placeholder="Ex: João Silva"
@@ -497,6 +524,7 @@ export default function SalesPage() {
                           placeholder="Digite para pesquisar no catálogo"
                           value={productQuery}
                           onFocus={() => setShowProductSuggestions(true)}
+                          onBlur={() => setTimeout(() => setShowProductSuggestions(false), 200)}
                           onChange={(e) => {
                             const value = e.target.value;
                             setProductQuery(value);
@@ -569,6 +597,12 @@ export default function SalesPage() {
                   <div>
                     <h4 className="form-section">Valores e Pagamento</h4>
                     
+                    <div className="form-group">
+                      <label>Custo Unitário da Peça (R$)</label>
+                      <input type="number" step="0.01" value={formData.custo_unitario} onChange={e => setFormData({...formData, custo_unitario: parseFloat(e.target.value)})} placeholder="0.00" />
+                      <small style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Automático ao escolher produto, ou preencha manualmente para calcular o lucro.</small>
+                    </div>
+
                     <div className="form-group">
                       <label>Valor Total da Venda (R$) *</label>
                       <input type="number" step="0.01" value={formData.valor_venda} onChange={e => setFormData({...formData, valor_venda: parseFloat(e.target.value)})} required style={{ fontSize: '1.2rem', fontWeight: 'bold' }} />
