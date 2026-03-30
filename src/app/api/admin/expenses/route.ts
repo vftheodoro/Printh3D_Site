@@ -38,13 +38,49 @@ export async function POST(request: Request) {
     const json = await request.json();
     const supabase = getAdminSupabase();
 
-    const { data, error } = await supabase.from('expenses').insert([{
-      ...json,
+    const payload = {
+      descricao: json.descricao,
+      categoria: json.categoria,
+      fornecedor: json.fornecedor || '',
+      tipo_pagamento: json.tipo_pagamento,
+      quantidade: Number(json.quantidade) || 0,
+      valor_unitario: Number(json.valor_unitario) || 0,
+      valor_total: Number(json.valor_total) || 0,
+      observacoes: json.observacoes || '',
       data_gasto: json.data_gasto || new Date().toISOString().split('T')[0]
-    }]).select().single();
+    };
 
-    if (error) throw error;
-    return NextResponse.json(data);
+    const { data, error } = await supabase
+      .from('expenses')
+      .insert([{ ...payload }])
+      .select()
+      .single();
+
+    if (!error) return NextResponse.json(data);
+
+    // Fallback for environments where the PK sequence got out of sync.
+    if (String(error.message || '').includes('expenses_pkey')) {
+      const { data: lastRow, error: lastRowError } = await supabase
+        .from('expenses')
+        .select('id')
+        .order('id', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (lastRowError && lastRowError.code !== 'PGRST116') throw lastRowError;
+
+      const nextId = (lastRow?.id ?? 0) + 1;
+      const retry = await supabase
+        .from('expenses')
+        .insert([{ id: nextId, ...payload }])
+        .select()
+        .single();
+
+      if (retry.error) throw retry.error;
+      return NextResponse.json(retry.data);
+    }
+
+    throw error;
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

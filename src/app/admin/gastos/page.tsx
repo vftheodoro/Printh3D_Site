@@ -87,12 +87,25 @@ export default function ExpensesPage() {
     return Number((qtd * unit).toFixed(2));
   };
 
+  const toNumberOrZero = (value: string) => {
+    const num = Number(value);
+    return Number.isFinite(num) ? num : 0;
+  };
+
   const handleUnitChange = (val: number) => {
-    setFormData((prev: any) => ({ ...prev, valor_unitario: val, valor_total: calculateTotal(prev.quantidade, val) }));
+    setFormData((prev: any) => ({
+      ...prev,
+      valor_unitario: val,
+      valor_total: calculateTotal(Number(prev.quantidade) || 0, val)
+    }));
   };
 
   const handleQtdChange = (val: number) => {
-     setFormData((prev: any) => ({ ...prev, quantidade: val, valor_total: calculateTotal(val, prev.valor_unitario) }));
+     setFormData((prev: any) => ({
+      ...prev,
+      quantidade: val,
+      valor_total: calculateTotal(val, Number(prev.valor_unitario) || 0)
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -282,15 +295,35 @@ export default function ExpensesPage() {
                 <div className="form-row" style={{ alignItems: 'end', background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: 'var(--radius)', border: '1px solid var(--border)', marginBottom: '1rem' }}>
                   <div className="form-group" style={{ marginBottom: 0 }}>
                     <label>Quantidade</label>
-                    <input type="number" min="1" step="any" value={formData.quantidade} onChange={e => handleQtdChange(parseFloat(e.target.value))} required />
+                    <input
+                      type="number"
+                      min="1"
+                      step="any"
+                      value={Number.isFinite(Number(formData.quantidade)) ? formData.quantidade : 0}
+                      onChange={e => handleQtdChange(toNumberOrZero(e.target.value))}
+                      required
+                    />
                   </div>
                   <div className="form-group" style={{ marginBottom: 0 }}>
                     <label>Valor Unitário (R$)</label>
-                    <input type="number" step="0.01" value={formData.valor_unitario} onChange={e => handleUnitChange(parseFloat(e.target.value))} required />
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={Number.isFinite(Number(formData.valor_unitario)) ? formData.valor_unitario : 0}
+                      onChange={e => handleUnitChange(toNumberOrZero(e.target.value))}
+                      required
+                    />
                   </div>
                   <div className="form-group" style={{ marginBottom: 0 }}>
                     <label style={{ color: 'var(--danger)' }}>Valor Total</label>
-                    <input type="number" step="0.01" value={formData.valor_total} onChange={e => setFormData({...formData, valor_total: parseFloat(e.target.value)})} required style={{ fontWeight: 'bold', borderColor: 'var(--danger-light)' }} />
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={Number.isFinite(Number(formData.valor_total)) ? formData.valor_total : 0}
+                      onChange={e => setFormData({...formData, valor_total: toNumberOrZero(e.target.value)})}
+                      required
+                      style={{ fontWeight: 'bold', borderColor: 'var(--danger-light)' }}
+                    />
                   </div>
                 </div>
 
