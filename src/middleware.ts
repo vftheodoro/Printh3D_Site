@@ -13,8 +13,11 @@ function getJwtSecret(): Uint8Array {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
-  // Protect all /admin routes except the login and init routes
-  if (pathname.startsWith('/admin') && pathname !== '/admin/login' && pathname !== '/api/admin/login' && pathname !== '/api/admin/init') {
+  const isProtectedPath = pathname.startsWith('/admin') || pathname.startsWith('/api/admin');
+  const isPublicPath = pathname === '/admin/login' || pathname === '/api/admin/login' || pathname === '/api/admin/init';
+
+  // Protect all /admin and /api/admin routes except the login and init routes
+  if (isProtectedPath && !isPublicPath) {
     let jwtSecret: Uint8Array;
     try {
       jwtSecret = getJwtSecret();

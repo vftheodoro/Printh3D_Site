@@ -16,11 +16,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Muitas tentativas falhas. Tente novamente em 15 minutos.' }, { status: 429 });
     }
 
-    const { email, password } = await request.json();
+    const { email: rawEmail, password } = await request.json();
 
-    if (!email || !password) {
+    if (!rawEmail || !password) {
       return NextResponse.json({ error: 'Email e senha são obrigatórios.' }, { status: 400 });
     }
+
+    const email = rawEmail.trim().toLowerCase();
 
     const supabase = getAdminSupabase();
     

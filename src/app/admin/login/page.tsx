@@ -31,7 +31,7 @@ export default function LoginPage() {
         throw new Error(data.error || 'Erro ao realizar login');
       }
 
-      router.push('/admin');
+      window.location.href = '/admin';
       
     } catch (err: any) {
       setError(err.message);
